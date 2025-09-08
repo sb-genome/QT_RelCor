@@ -1,19 +1,11 @@
 ---
 title: 'R Manual: Identifying Comorbid Endophenotype for a Binary Disease Using Clustered Data'
 author: "Prasun Panja"
-output:
-  html_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
-  pdf_document:
-    toc: true
-    toc_depth: '3'
 ---
 
 # Overview
 
-This document is an R manual for the functions developed to identify comorbid associations between a quantitative trait (QT) and a binary disease trait. The QT can be identified as an endophenotype or quantitative precursor for the disease. Use the built-in table of contents (left panel in HTML) to jump to sections.
+This document is an R manual for the functions developed to identify comorbid associations between a quantitative trait (QT) and a binary disease trait. The QT can be identified as an endophenotype or quantitative precursor for the disease. Use the built-in table of contents to jump to sections.
 
 
 # Required packages
