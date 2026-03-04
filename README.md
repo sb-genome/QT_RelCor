@@ -332,14 +332,78 @@ A `data.frame` with columns:
 **Examples**
 
 ```r
-# toy example (construct a small sib-ship-like data.frame)
-df <- data.frame(
-  Family_Number = c(1,1,2,2,2,3,3),
-  Category = c(1,0,1,0,0,1,0),
-  Trait_val = c(2.3, 1.8, 3.2, 2.9, 2.5, 4.1, 3.9)
-)
-res <- cmrbd(df, value_col = "Trait_val", affected_label = 1, n_perm = 200)
-print(res)
+set.seed(137)
+library(LaplacesDemon)
+nfam<-50
+alpha<-1
+mu<-0
+variance<-2
+rho<-0.3
+pow1<-0
+pow2<-0
+lambda=1.4
+dx<-0
+for (i in 1:4) {
+  dx=dx+((lambda^i)/factorial(i))
+}
+px<-vector()
+for (i in 1:4) {
+  px[i]=((lambda^i)/factorial(i))/dx
+}
+px
+x<-list()
+y<-list()
+fm_id<-list()
+fam_num<-rmultinom(1,nfam,px)
+if(fam_num[1]>0){for (k in 1:fam_num[1]) {
+  y[[k]]<-1}}
+if(fam_num[2]>0){for (k in (fam_num[1]+1):(fam_num[1]+fam_num[2])){
+  y[[k]]<-c(1,0)}}
+if(fam_num[3]>0){for (k in (fam_num[1]+fam_num[2]+1):(fam_num[1]+fam_num[2]+fam_num[3])){
+  pk<-runif(1,0,0.5)
+  mk<-3
+  pg<-vector()
+  for (w in 1:(mk-1)) {
+    pg[w]<-(dbinom(w,mk,pk))/(1-dbinom(0,mk,pk)-dbinom(mk,mk,pk))
+  }
+  fd<-sample(1:(mk-1),1,prob = pg)
+  y[[k]]<-c(1,0,fd-1)}}
+if(fam_num[4]>0){for (k in (fam_num[1]+fam_num[2]+fam_num[3]+1):(fam_num[1]+fam_num[2]+fam_num[3]+fam_num[4])){
+  pk<-runif(1,0,0.5)
+  mk<-4
+  pg<-vector()
+  for (w in 1:(mk-1)) {
+    pg[w]<-(dbinom(w,mk,pk))/(1-dbinom(0,mk,pk)-dbinom(mk,mk,pk))
+  }
+  fd<-sample(1:(mk-1),1,prob = pg)
+  y[[k]]<-c(0,0,0,0)
+  for(i in 1:fd){
+    y[[k]][i]<-1
+  }
+}}
+
+if(fam_num[1]>0){for (k in 1:fam_num[1]) {
+  x[[k]]<-rnorm(1,mu+alpha*y[[k]],sqrt(variance))
+  fm_id[[k]]<-rep(k, 1)
+}}
+if(fam_num[2]>0){for (k in (fam_num[1]+1):(fam_num[1]+fam_num[2])){
+  x[[k]]<-rmvn(1,c(mu,mu)+alpha*y[[k]],variance*matrix(c(1,rho,rho,1),nrow=2,byrow = T))
+  fm_id[[k]]<-rep(k, 2)
+}}
+if(fam_num[3]>0){for (k in (fam_num[1]+fam_num[2]+1):(fam_num[1]+fam_num[2]+fam_num[3])){
+  x[[k]]<-rmvn(1,c(mu,mu,mu)+alpha*y[[k]],variance*matrix(c(1,rho,rho,rho,1,rho,rho,rho,1),nrow=3,byrow = T))
+  fm_id[[k]]<-rep(k, 3)
+}}
+if(fam_num[4]>0){for (k in (fam_num[1]+fam_num[2]+fam_num[3]+1):(fam_num[1]+fam_num[2]+fam_num[3]+fam_num[4])){
+  x[[k]]<-rmvn(1,c(mu,mu,mu,mu)+alpha*y[[k]],variance*matrix(c(1,rho,rho,rho,rho,1,rho,rho,rho,rho,1,rho,rho,rho,rho,1),nrow=4,byrow = T))
+  fm_id[[k]]<-rep(k, 4)
+}}
+qt <- unlist(x)
+bt <- unlist(y)
+fm <- unlist(fm_id)
+toydata <- data.frame(Family_Number = fm, Category = bt, Trait_val = qt)
+result <- cmrbd(toydata, value_col = "Trait_val", affected_label = 1)
+print(result)
 ```
 
 

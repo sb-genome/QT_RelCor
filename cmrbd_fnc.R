@@ -203,7 +203,7 @@ cmrbd <- function(df, value_col = "value", affected_label = "Affected", n_perm =
   }
   if (is.numeric(value_col)) value_col_idx <- value_col else value_col_idx <- which(names(df) == value_col)
   if (length(value_col_idx) != 1) stop("value_col ambiguous")
-
+  
   # build family-wise lists
   famid <- unique(df$Family_Number)
   nfam <- length(famid)
@@ -437,9 +437,9 @@ cmrbd <- function(df, value_col = "value", affected_label = "Affected", n_perm =
     for (k in seq_len(nfam)) {
       if (m[k] > 1) {
         cs_k <- (t(y[[k]]) %*% (x_cpy[[k]])) / sum(y[[k]])
-        cs_k <- cs_k / ((1 / sum(y[[k]])) + r_in_cpy * (1 - 1 / sum(y[[k]])))
+        cs_k <- cs_k / sqrt((1 / sum(y[[k]])) + r_in_cpy * (1 - 1 / sum(y[[k]])))
         cn_k <- (t(1 - y[[k]]) %*% (x_cpy[[k]])) / sum(1 - y[[k]])
-        cn_k <- cn_k / ((1 / sum(1 - y[[k]])) + r_in_cpy * (1 - 1 / sum(1 - y[[k]])))
+        cn_k <- cn_k / sqrt((1 / sum(1 - y[[k]])) + r_in_cpy * (1 - 1 / sum(1 - y[[k]])))
         if (!is.na(cs_k)) cs_cpy <- c(cs_cpy, cs_k)
         if (!is.na(cn_k)) cn_cpy <- c(cn_cpy, cn_k)
       }
@@ -464,9 +464,9 @@ cmrbd <- function(df, value_col = "value", affected_label = "Affected", n_perm =
   for (k in seq_len(nfam)) {
     if (m[k] > 1) {
       cs_k <- (t(y[[k]]) %*% (x[[k]])) / sum(y[[k]])
-      cs_k <- cs_k / ((1 / sum(y[[k]])) + r_in * (1 - 1 / sum(y[[k]])))
+      cs_k <- cs_k / sqrt((1 / sum(y[[k]])) + r_in * (1 - 1 / sum(y[[k]])))
       cn_k <- (t(1 - y[[k]]) %*% (x[[k]])) / sum(1 - y[[k]])
-      cn_k <- cn_k / ((1 / sum(1 - y[[k]])) + r_in * (1 - 1 / sum(1 - y[[k]])))
+      cn_k <- cn_k / sqrt((1 / sum(1 - y[[k]])) + r_in * (1 - 1 / sum(1 - y[[k]])))
       if (!is.na(cs_k)) cs <- c(cs, cs_k)
       if (!is.na(cn_k)) cn <- c(cn, cn_k)
     }
@@ -477,15 +477,16 @@ cmrbd <- function(df, value_col = "value", affected_label = "Affected", n_perm =
   np <- sum(st > T_obs)
   p_np <- np / n_perm
   Dnp <- ifelse(p_np > 0.025 & p_np < 0.975, "Insignificant", "Significant")
+  p_val_np <- 2 * min(c(p_np, 1-p_np))
   
   comp_sim <- data.frame(
     lhd0 = lhd0, lhd1 = lhd1, lrt = lrt, p_val = p_val, D = D,
-    T = T_obs, p_np = p_np, Dnp = Dnp
+    T = T_obs, p_np = p_val_np, Dnp = Dnp
   )
   return(comp_sim)
 }
 
 # Example usage:
 # df <- read.csv("toydata.csv", header = TRUE)
-result <- cmrbd(toydata, value_col = "Trait_val", affected_label = 1)
+# result <- cmrbd(toydata, value_col = "Trait_val", affected_label = 1)
 # print(result)
